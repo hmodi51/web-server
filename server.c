@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <string.h>
+#include <unistd.h>
+
+
+
+void handle_client(int connfd){
+    char *buf = "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html\r\n"
+    "Connection: close\r\n"
+    "\r\n"
+    "<!DOCTYPE html>\n"
+    "<html>\n"
+    "<head>\n"
+    "    <title>Simple Page</title>\n"
+    "</head>\n"
+    "<body>\n"
+    "    <h1>Hello from C Server!</h1>\n"
+    "    <p>This is a basic HTML page.</p>\n"
+    "</body>\n"
+    "</html>\n";
+    send(connfd ,  buf , strlen(buf) , 0);
+    close(connfd);
+}
+
+
+int main(){
+    struct addrinfo hints , *res;
+    struct sockaddr_storage their_addr;
+    socklen_t addrlen = sizeof their_addr;
+    memset(&hints , 0 , sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    getaddrinfo(NULL , "8080" , &hints , &res);
+
+    int sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    int optval = 1;
+    if(sockfd < 0){ 
+        printf("error opening socket\n");
+        return -1;
+    }
+    if(setsockopt(sockfd , SOL_SOCKET , SO_REUSEADDR , &optval , sizeof(optval)) < 0){
+        printf("error in setsockopt\n");
+        return -1;
+    }
+
+    if(bind(sockfd , res->ai_addr , res->ai_addrlen) < 0){
+        printf("binding failed\n");
+        perror("bind");
+        return -1;
+    }
+
+    if(listen(sockfd , 5) < 0){
+        printf("error in listen\n");
+        return -1;
+    }
+
+    while(1){
+        printf("accepting connection\n");
+        int connfd = accept(sockfd , (struct sockaddr *)&their_addr , &addrlen);
+        handle_client(connfd);
+    }
+    close(sockfd);
+
+    return 0;
+}
