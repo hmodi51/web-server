@@ -4,25 +4,52 @@
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+
+#define PORT "8080"
+#define bufSIZE 4096
+
+char recbuf[bufSIZE];
+char temprecbuf[bufSIZE];
+char buf[bufSIZE];
+char data[bufSIZE];
+const char* del = " ";
+
 
 
 
 void handle_client(int connfd){
+    char *path;
+    recv(connfd , recbuf , bufSIZE , 0);
+    strcpy(temprecbuf , recbuf);
+    char* tokens = strtok(temprecbuf , del);
+    char *filePath = strtok(NULL , del);
+    printf("filepath is %s\n" , filePath);
+    // printf(tokens);
+    printf(recbuf);
+    if (strcmp(filePath ,  "/") ==0){
+        path = "index.html";
+    }
+    else{
+        path = filePath+1;
+    }
+    FILE *fptr;
+    fptr = fopen(path , "r");
+    if(fptr == NULL){
+        perror("the file is not opened");
+
+        exit(1);
+    }
     char *buf = "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
     "Connection: close\r\n"
-    "\r\n"
-    "<!DOCTYPE html>\n"
-    "<html>\n"
-    "<head>\n"
-    "    <title>Simple Page</title>\n"
-    "</head>\n"
-    "<body>\n"
-    "    <h1>Hello from C Server!</h1>\n"
-    "    <p>This is a basic HTML page.</p>\n"
-    "</body>\n"
-    "</html>\n";
-    send(connfd ,  buf , strlen(buf) , 0);
+    "\r\n";
+    send(connfd , buf , strlen(buf) , 0);
+    printf(buf);
+    while(fgets(data , bufSIZE , fptr) != NULL){
+        send(connfd , data , strlen(data) , 0);
+        printf(data);
+    }
     close(connfd);
 }
 
@@ -36,7 +63,7 @@ int main(){
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    getaddrinfo(NULL , "8080" , &hints , &res);
+    getaddrinfo(NULL , PORT , &hints , &res);
 
     int sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     int optval = 1;

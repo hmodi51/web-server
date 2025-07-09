@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2025-02-15 Sat 19:59 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Harshit's Org Portfolio</title>
+<meta name="author" content="Harshit Modi" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+<link rel="stylesheet" type="text/css" href="emac.css" />
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Harshit's Org Portfolio</h1>
+<p>
+This Website has been made using org mode because I am <a href="https://www.merriam-webster.com/dictionary/lazy">lazy</a>.
+</p>
+
+<div id="outline-container-org019b42d" class="outline-4">
+<h4 id="org019b42d">If you are a recruiter wanting to look at my portfolio , visit <a href="https://justharsh.xyz">here</a> as this website is not for you.</h4>
+</div>
+
+<div id="outline-container-orgdc8f7a3" class="outline-2">
+<h2 id="orgdc8f7a3">Hey, Harshit here</h2>
+<div class="outline-text-2" id="text-orgdc8f7a3">
+<p>
+Completely lost my mind while trying to get Computer Science degree at UIC with a surprisingly stable 3.62 GPA—I guess it hasn’t figured out yet that I’m totally winging it. If I play my cards right (and don't bomb my finals), I’ll be outta there with a degree in December 2025.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbc5cbb0" class="outline-2">
+<h2 id="orgbc5cbb0">Current Gigs:</h2>
+<div class="outline-text-2" id="text-orgbc5cbb0">
+<p>
+Teaching Assistant for CS 261: I’ve got 300 students signed up, but 50 elite ever show up to see if I actually exist. My teaching style? A sprinkle of sarcasm and pretending I know what I am doing.
+</p>
+
+<p>
+Coding Shenanigans at BITS Lab: I’m whipping up a Visual Studio Code extension that lights up your C code’s darkest secrets (how u probably GPTed the whole code and dont know how to debug it). Also, I’m messing with automated proof generation—because, hey, maybe it’ll crash less.
+</p>
+
+<p>
+Technician at Tech Helpdesk : Spending my day asking client if they tried turning it off and on again?
+</p>
+
+<p>
+Officer at <a href="https://lug.cs.uic.edu/">Linux Users Group at UIC</a> where I keep iterating that windows suck even though we use Active Directory ourselves. Hopefully no one ever gets to know that.😭
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf55b212" class="outline-2">
+<h2 id="orgf55b212">Past Gigs</h2>
+<div class="outline-text-2" id="text-orgf55b212">
+<p>
+Human-Computer Interaction Research at UIC Elicit Lab: I’m basically trying to figure out why people yell at their computers. I thought they were using GNOME but Turns out, a nicer-looking screen makes them yell less. Who knew?
+</p>
+
+<p>
+Learning Assistant for Math : I basically again tried to pretend I know anything in Math.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5e89be4" class="outline-2">
+<h2 id="org5e89be4">Projects I Haven’t Completely Destroyed:</h2>
+<div class="outline-text-2" id="text-org5e89be4">
+<p>
+Unix-like Shell in C: Mostly works like a charm, until it doesn’t and then I remember why I am not a system adminstrator.
+</p>
+
+<p>
+Secure CLI Password Manager: A fancy way to keep passwords that doesn’t involve sticky notes. It’s built with Python, rocks AES-256 encryption, and doesn’t go through the wash.
+</p>
+
+<p>
+Arc Editor: A slim text editor that can deal with files without blowing up my laptop. Tested it myself during one too many late-night coding sessions
+</p>
+
+<p>
+Tic Tac Toe AI: Crafted with HTML, CSS, and JavaScript, it’s designed to make sure I can never win. Great for my ego. Also whenever I feel useless I look at it.
+</p>
+
+<p>
+BlackJack Game: More exciting than my usual lectures and built in old ass JavaFX which whoever uses should have been diagnosed with severe case of psychosis.
+</p>
+
+<p>
+Currently my active website which I built using HTML and CSS is hosted on <a href="https://justharsh.xyz">https://justharsh.xyz</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org029c0be" class="outline-2">
+<h2 id="org029c0be">Blogs</h2>
+<div class="outline-text-2" id="text-org029c0be">
+<p>
+I have written some great blogs related to cybersecurity. 
+Visit on my <a href="blog">blog on why no one should click on random links </a> here.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4e6e146" class="outline-2">
+<h2 id="org4e6e146">Projects</h2>
+<div class="outline-text-2" id="text-org4e6e146">
+<p>
+Here are some of the projects I've worked on:
+</p>
+<ul class="org-ul">
+<li>Projects can be found on my <a href="https://github.com/hmodi51">GitHub</a>.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org23ac06c" class="outline-2">
+<h2 id="org23ac06c">Contact</h2>
+<div class="outline-text-2" id="text-org23ac06c">
+<p>
+You can reach me at <a href="/cdn-cgi/l/email-protection#95f8faf1fcfdf4e7e6fdfce1a5a4d5f2f8f4fcf9bbf6faf8">Email</a>.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Harshit Modi</p>
+<p class="date">Created: 2025-02-15 Sat 19:59</p>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>
