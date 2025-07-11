@@ -36,9 +36,9 @@ void handle_client(int connfd){
     FILE *fptr;
     fptr = fopen(path , "r");
     if(fptr == NULL){
-        perror("the file is not opened");
+        // perror("the file is not opened");
 
-        exit(1);
+        // exit(1);
     }
     char *buf = "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
