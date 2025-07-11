@@ -1,10 +1,14 @@
 CC= gcc
-CFLAGS= -o
+CFLAGS= -g -o
 
 server: server.c 
 	$(CC) server.c $(CFLAGS) server
-	./server
+	
+gdb:server
+	gdb server
 
-	rm -rf server
+clean:
+	rm server
+
 
 

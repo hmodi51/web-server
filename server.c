@@ -8,37 +8,42 @@
 
 #define PORT "8080"
 #define bufSIZE 4096
+#define PATH "index.html"
 
 char recbuf[bufSIZE];
 char temprecbuf[bufSIZE];
 char buf[bufSIZE];
 char data[bufSIZE];
-const char* del = " ";
+const char* del = "\r\n";
+const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
 
 
 
 
 void handle_client(int connfd){
-    char *path;
+    char path[bufSIZE];
     recv(connfd , recbuf , bufSIZE , 0);
     strcpy(temprecbuf , recbuf);
     char* tokens = strtok(temprecbuf , del);
-    char *filePath = strtok(NULL , del);
-    printf("filepath is %s\n" , filePath);
+    char *requestLine = strtok(tokens , " ");
+    printf("request line is %s\n" , requestLine);
+    char *filePath = strtok(NULL , " ");
+    printf("filpath is %s\n" , filePath);
     // printf(tokens);
     printf(recbuf);
     if (strcmp(filePath ,  "/") ==0){
-        path = "index.html";
+        snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
+        printf("default path is %s\n" , path);
     }
     else{
-        path = filePath+1;
+        snprintf(path , bufSIZE , "%s%s" , pwd , filePath);
     }
     FILE *fptr;
     fptr = fopen(path , "r");
     if(fptr == NULL){
-        // perror("the file is not opened");
+        perror("the file is not opened");
 
-        // exit(1);
+        exit(1);
     }
     char *buf = "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
