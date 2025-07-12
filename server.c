@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,6 +10,9 @@
 #define PORT "8080"
 #define bufSIZE 4096
 #define PATH "index.html"
+#define http_version "HTTP/1.1"
+
+// struct stats file_stats;
 
 char recbuf[bufSIZE];
 char temprecbuf[bufSIZE];
@@ -17,6 +21,9 @@ char data[bufSIZE];
 const char* del = "\r\n";
 const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
 char path[bufSIZE];
+char statusLine[bufSIZE];
+char headers[bufSIZE];
+char entity[bufSIZE];
 
 
 typedef enum HTTP_STATUS {
@@ -29,12 +36,28 @@ void handle_method(char* requestLine){
 
 }
 
-void handle_404(){
-
+void handle_404(int connfd){
+    FILE *fptr;
+    snprintf(headers, sizeof(headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , headers);
+    send(connfd , entity , strlen(entity) , 0);
+    fptr = fopen("404.html" , "r");
+    while(fgets(data , bufSIZE , fptr) != NULL){
+        send(connfd , data , strlen(data) , 0);
+    }
+    close(connfd);
 }
 
-void handle_200(){
-
+void handle_200(int connfd){
+    FILE *fptr;
+    snprintf(headers, sizeof(headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , headers);
+    send(connfd , entity , strlen(entity) , 0);
+    fptr = fopen(path , "r");
+    while(fgets(data , bufSIZE , fptr) != NULL){
+        send(connfd , data , strlen(data) , 0);
+    }
+    close(connfd);
 }
 
 void checkPath(char* filePath){
@@ -56,6 +79,32 @@ HTTP_STATUS checkFile(char* path){
     else{
         return HTTP_OK;
     }
+    fclose(fptr);
+}
+
+void build_statusLine(HTTP_STATUS statusCode){
+    char* http_ver = http_version;
+    char* statuscode;
+    switch (statusCode){
+        case 200:
+            statuscode = "200 OK";
+            break;
+        case 404:
+            statuscode = "404 Not Found";
+    }
+    snprintf(statusLine , sizeof(statusLine) , "%s %s\r\n" , http_ver , statuscode);
+    printf("status line is %s\n", statusLine);
+}
+
+void build_headers(HTTP_STATUS statusCode , int connfd){
+    switch(statusCode){
+        case 200:
+            handle_200(connfd);
+            break;
+        case 404:
+            handle_404(connfd);
+            break;
+    }
 }
 
 
@@ -64,7 +113,7 @@ void handle_client(int connfd){
     strcpy(temprecbuf , recbuf);
     char* tokens = strtok(temprecbuf , del);
     char *requestLine = strtok(tokens , " ");
-    handle_method(requestLine);
+    // handle_method(requestLine);
     printf("request line is %s\n" , requestLine);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
@@ -72,31 +121,16 @@ void handle_client(int connfd){
     printf(recbuf);
     checkPath(filePath);
     HTTP_STATUS statusCode = checkFile(path);
+    build_statusLine(statusCode);
     printf("status code is %d\n" , statusCode);
-    // if (strcmp(filePath ,  "/") ==0){
-    //     snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
-    //     printf("default path is %s\n" , path);
-    // }
-    // else{
-    //     snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
-    //     printf("default path is %s\n" , path);
-    // }
-    // FILE *fptr;
-    // fptr = fopen(path , "r");
-    // if(fptr == NULL){
-    //     handle_404();
-    // }
-    // char *buf = "HTTP/1.1 200 OK\r\n"
-    // "Content-Type: text/html\r\n"
-    // "Connection: close\r\n"
-    // "\r\n";
+    build_headers(statusCode , connfd);
+
     // send(connfd , buf , strlen(buf) , 0);
     // printf(buf);
     // while(fgets(data , bufSIZE , fptr) != NULL){
     //     send(connfd , data , strlen(data) , 0);
     //     printf(data);
     // }
-    close(connfd);
 }
 
 
