@@ -16,45 +16,86 @@ char buf[bufSIZE];
 char data[bufSIZE];
 const char* del = "\r\n";
 const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
+char path[bufSIZE];
 
 
+typedef enum HTTP_STATUS {
+    HTTP_OK = 200,
+    HTTP_NOT_FOUND = 404
+} HTTP_STATUS;
+
+
+void handle_method(char* requestLine){
+
+}
+
+void handle_404(){
+
+}
+
+void handle_200(){
+
+}
+
+void checkPath(char* filePath){
+    if (strcmp(filePath , "/") == 0){
+        snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
+    }
+    else{
+        snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
+        printf("default path is %s\n" , path);
+    }
+}
+
+HTTP_STATUS checkFile(char* path){
+    FILE *fptr;
+    fptr = fopen(path , "r");
+    if(fptr == NULL){
+        return HTTP_NOT_FOUND;
+    }
+    else{
+        return HTTP_OK;
+    }
+}
 
 
 void handle_client(int connfd){
-    char path[bufSIZE];
     recv(connfd , recbuf , bufSIZE , 0);
     strcpy(temprecbuf , recbuf);
     char* tokens = strtok(temprecbuf , del);
     char *requestLine = strtok(tokens , " ");
+    handle_method(requestLine);
     printf("request line is %s\n" , requestLine);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
     // printf(tokens);
     printf(recbuf);
-    if (strcmp(filePath ,  "/") ==0){
-        snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
-        printf("default path is %s\n" , path);
-    }
-    else{
-        snprintf(path , bufSIZE , "%s%s" , pwd , filePath);
-    }
-    FILE *fptr;
-    fptr = fopen(path , "r");
-    if(fptr == NULL){
-        perror("the file is not opened");
-
-        exit(1);
-    }
-    char *buf = "HTTP/1.1 200 OK\r\n"
-    "Content-Type: text/html\r\n"
-    "Connection: close\r\n"
-    "\r\n";
-    send(connfd , buf , strlen(buf) , 0);
-    printf(buf);
-    while(fgets(data , bufSIZE , fptr) != NULL){
-        send(connfd , data , strlen(data) , 0);
-        printf(data);
-    }
+    checkPath(filePath);
+    HTTP_STATUS statusCode = checkFile(path);
+    printf("status code is %d\n" , statusCode);
+    // if (strcmp(filePath ,  "/") ==0){
+    //     snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
+    //     printf("default path is %s\n" , path);
+    // }
+    // else{
+    //     snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
+    //     printf("default path is %s\n" , path);
+    // }
+    // FILE *fptr;
+    // fptr = fopen(path , "r");
+    // if(fptr == NULL){
+    //     handle_404();
+    // }
+    // char *buf = "HTTP/1.1 200 OK\r\n"
+    // "Content-Type: text/html\r\n"
+    // "Connection: close\r\n"
+    // "\r\n";
+    // send(connfd , buf , strlen(buf) , 0);
+    // printf(buf);
+    // while(fgets(data , bufSIZE , fptr) != NULL){
+    //     send(connfd , data , strlen(data) , 0);
+    //     printf(data);
+    // }
     close(connfd);
 }
 
