@@ -23,9 +23,7 @@ const char* del = "\r\n";
 // const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
 char path[bufSIZE];
 char statusLine[bufSIZE];
-char headers[bufSIZE];        if(res == NULL){
-            
-        }
+char headers[bufSIZE];
 char entity[bufSIZE];
 char* method;
 
@@ -66,15 +64,14 @@ void handle_200(int connfd){
     close(connfd);
 }
 
-void checkPath(char* filePath){
+int checkPath(char* filePath){
+    char* res;
     if (strcmp(filePath , "/") == 0){
         char* relativePath = "index.html";
-        char *res = realpath(relativePath , path);
-        // snprintf(path , bufSIZE , "%s%s" ,  , PATH);
+        res = realpath(relativePath , path);
     }
     else{
-        char *res = realpath(filePath+1 , path);
-        // snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
+        res = realpath(filePath+1 , path);
         printf("default path is %s\n" , path);
     }
 
@@ -87,16 +84,12 @@ void checkPath(char* filePath){
     }
 }
 
-HTTP_STATUS checkFile(char* path){
-    FILE *fptr;
-    fptr = fopen(path , "r");
-    if(fptr == NULL){
-        return HTTP_NOT_FOUND;
+void checkFile(){
+    struct stat statbuf;
+    stat(path , &statbuf);
+    if(S_ISDIR(statbuf.st_mode)){
+        strcat(path , "/index.html");
     }
-    else{
-        return HTTP_OK;
-    }
-    fclose(fptr);
 }
 
 void build_statusLine(HTTP_STATUS statusCode){
@@ -143,7 +136,8 @@ void handle_client(int connfd){
         statusCode = HTTP_NOT_FOUND;
     }
     else{
-        statusCode = checkFile(path);
+        statusCode = HTTP_OK;
+        checkFile();
     }
     build_statusLine(statusCode);
     printf("status code is %d\n" , statusCode);
