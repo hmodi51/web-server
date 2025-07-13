@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #define PORT "8080"
 #define bufSIZE 4096
@@ -19,11 +20,14 @@ char temprecbuf[bufSIZE];
 char buf[bufSIZE];
 char data[bufSIZE];
 const char* del = "\r\n";
-const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
+// const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
 char path[bufSIZE];
 char statusLine[bufSIZE];
-char headers[bufSIZE];
+char headers[bufSIZE];        if(res == NULL){
+            
+        }
 char entity[bufSIZE];
+char* method;
 
 
 typedef enum HTTP_STATUS {
@@ -33,7 +37,7 @@ typedef enum HTTP_STATUS {
 
 
 void handle_method(char* requestLine){
-
+    method = requestLine;
 }
 
 void handle_404(int connfd){
@@ -53,20 +57,33 @@ void handle_200(int connfd){
     snprintf(headers, sizeof(headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
     snprintf(entity , sizeof(entity) , "%s%s" , statusLine , headers);
     send(connfd , entity , strlen(entity) , 0);
-    fptr = fopen(path , "r");
-    while(fgets(data , bufSIZE , fptr) != NULL){
-        send(connfd , data , strlen(data) , 0);
+    if(strcmp(method , "GET")==0){
+        fptr = fopen(path , "r");
+        while(fgets(data , bufSIZE , fptr) != NULL){
+            send(connfd , data , strlen(data) , 0);
+        }
     }
     close(connfd);
 }
 
 void checkPath(char* filePath){
     if (strcmp(filePath , "/") == 0){
-        snprintf(path , bufSIZE , "%s%s" , pwd , PATH);
+        char* relativePath = "index.html";
+        char *res = realpath(relativePath , path);
+        // snprintf(path , bufSIZE , "%s%s" ,  , PATH);
     }
     else{
-        snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
+        char *res = realpath(filePath+1 , path);
+        // snprintf(path , bufSIZE , "%s%s" , pwd , filePath+1);
         printf("default path is %s\n" , path);
+    }
+
+
+    if(res == NULL){
+        return -1;
+    }
+    else{
+        return 0;
     }
 }
 
@@ -113,24 +130,24 @@ void handle_client(int connfd){
     strcpy(temprecbuf , recbuf);
     char* tokens = strtok(temprecbuf , del);
     char *requestLine = strtok(tokens , " ");
+    handle_method(requestLine);
     // handle_method(requestLine);
     printf("request line is %s\n" , requestLine);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
     // printf(tokens);
     printf(recbuf);
-    checkPath(filePath);
-    HTTP_STATUS statusCode = checkFile(path);
+    int ret = checkPath(filePath);
+    HTTP_STATUS statusCode;
+    if(ret == -1){
+        statusCode = HTTP_NOT_FOUND;
+    }
+    else{
+        statusCode = checkFile(path);
+    }
     build_statusLine(statusCode);
     printf("status code is %d\n" , statusCode);
     build_headers(statusCode , connfd);
-
-    // send(connfd , buf , strlen(buf) , 0);
-    // printf(buf);
-    // while(fgets(data , bufSIZE , fptr) != NULL){
-    //     send(connfd , data , strlen(data) , 0);
-    //     printf(data);
-    // }
 }
 
 
