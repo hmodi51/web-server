@@ -1,5 +1,5 @@
 CC= gcc
-CFLAGS= -g -o
+CFLAGS= -g -Werror -fsanitize=address -o
 
 server: server.c 
 	$(CC) server.c $(CFLAGS) server

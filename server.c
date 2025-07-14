@@ -13,19 +13,13 @@
 #define PATH "index.html"
 #define http_version "HTTP/1.1"
 
-// struct stats file_stats;
 
-char recbuf[bufSIZE];
-char temprecbuf[bufSIZE];
-char buf[bufSIZE];
-char data[bufSIZE];
-const char* del = "\r\n";
-// const char* pwd = "/home/harsh/Desktop/PersonalProjects/web-server/";
-char path[bufSIZE];
-char statusLine[bufSIZE];
-char headers[bufSIZE];
-char entity[bufSIZE];
-char* method;
+typedef struct request {
+    int clientfd;
+    char method[8];
+    char path[bufSIZE];
+    char headers[bufSIZE];
+} request;
 
 
 typedef enum HTTP_STATUS {
@@ -34,45 +28,50 @@ typedef enum HTTP_STATUS {
 } HTTP_STATUS;
 
 
-void handle_method(char* requestLine){
-    method = requestLine;
+void handle_method(char* requestLine , request* req){
+    snprintf(req->method , bufSIZE , "%s" , requestLine);
+    printf("hndle methid %s\n" , req->method);
 }
 
-void handle_404(int connfd){
+void handle_404(request* req , char* statusLine){
+    char data[bufSIZE];
+    char entity[bufSIZE];
     FILE *fptr;
-    snprintf(headers, sizeof(headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
-    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , headers);
-    send(connfd , entity , strlen(entity) , 0);
+    snprintf(req->headers, sizeof(req->headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , req->headers);
+    send(req->clientfd , entity , strlen(entity) , 0);
     fptr = fopen("404.html" , "r");
     while(fgets(data , bufSIZE , fptr) != NULL){
-        send(connfd , data , strlen(data) , 0);
+        send(req->clientfd , data , strlen(data) , 0);
     }
-    close(connfd);
+    close(req->clientfd);
 }
 
-void handle_200(int connfd){
+void handle_200(request* req , char* statusLine){
+    char data[bufSIZE];
+    char entity[bufSIZE];
     FILE *fptr;
-    snprintf(headers, sizeof(headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
-    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , headers);
-    send(connfd , entity , strlen(entity) , 0);
-    if(strcmp(method , "GET")==0){
-        fptr = fopen(path , "r");
+    snprintf(req->headers, sizeof(req->headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(entity , sizeof(entity) , "%s%s" , statusLine , req->headers);
+    send(req->clientfd , entity , strlen(entity) , 0);
+    if(strcmp(req->method , "GET")==0){
+        fptr = fopen(req->path , "r");
         while(fgets(data , bufSIZE , fptr) != NULL){
-            send(connfd , data , strlen(data) , 0);
+            send(req->clientfd , data , strlen(data) , 0);
         }
     }
-    close(connfd);
+    close(req->clientfd);
 }
 
-int checkPath(char* filePath){
+int checkPath(char* filePath , request* req){
     char* res;
     if (strcmp(filePath , "/") == 0){
         char* relativePath = "index.html";
-        res = realpath(relativePath , path);
+        res = realpath(relativePath , req->path);
     }
     else{
-        res = realpath(filePath+1 , path);
-        printf("default path is %s\n" , path);
+        res = realpath(filePath+1 , req->path);
+        printf("default path is %s\n" , req->path);
     }
 
 
@@ -84,15 +83,18 @@ int checkPath(char* filePath){
     }
 }
 
-void checkFile(){
+void checkFile(request* req){
     struct stat statbuf;
-    stat(path , &statbuf);
+    stat(req->path , &statbuf);
     if(S_ISDIR(statbuf.st_mode)){
-        strcat(path , "/index.html");
+        snprintf(req->path + strlen(req->path), bufSIZE - strlen(req->path) , "%s" , "/index.html");
+        int length = strlen(req->path);
+        printf("Length of string is : %d", length);
+        // strcat(path , "/index.html");
     }
 }
 
-void build_statusLine(HTTP_STATUS statusCode){
+void build_statusLine(HTTP_STATUS statusCode , char* statusLine){
     char* http_ver = http_version;
     char* statuscode;
     switch (statusCode){
@@ -102,46 +104,47 @@ void build_statusLine(HTTP_STATUS statusCode){
         case 404:
             statuscode = "404 Not Found";
     }
-    snprintf(statusLine , sizeof(statusLine) , "%s %s\r\n" , http_ver , statuscode);
+    snprintf(statusLine , bufSIZE , "%s %s\r\n" , http_ver , statuscode);
     printf("status line is %s\n", statusLine);
 }
 
-void build_headers(HTTP_STATUS statusCode , int connfd){
+void build_headers(HTTP_STATUS statusCode , char* statusLine , request* req){
     switch(statusCode){
         case 200:
-            handle_200(connfd);
+            handle_200(req , statusLine);
             break;
         case 404:
-            handle_404(connfd);
+            handle_404(req , statusLine);
             break;
     }
 }
 
 
 void handle_client(int connfd){
-    recv(connfd , recbuf , bufSIZE , 0);
-    strcpy(temprecbuf , recbuf);
-    char* tokens = strtok(temprecbuf , del);
+    request req;
+    req.clientfd = connfd;
+    char path[bufSIZE];
+    char recbuf[bufSIZE];
+    char statusLine[bufSIZE];
+    recv(req.clientfd , recbuf , bufSIZE , 0);
+    char* tokens = strtok(recbuf , "\r\n");
     char *requestLine = strtok(tokens , " ");
-    handle_method(requestLine);
-    // handle_method(requestLine);
-    printf("request line is %s\n" , requestLine);
+    handle_method(requestLine , &req);
+    printf("request line is %s\n" , req.method);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
-    // printf(tokens);
-    printf(recbuf);
-    int ret = checkPath(filePath);
+    int ret = checkPath(filePath , &req);
     HTTP_STATUS statusCode;
     if(ret == -1){
         statusCode = HTTP_NOT_FOUND;
     }
     else{
         statusCode = HTTP_OK;
-        checkFile();
+        checkFile(&req);
     }
-    build_statusLine(statusCode);
+    build_statusLine(statusCode , statusLine);
     printf("status code is %d\n" , statusCode);
-    build_headers(statusCode , connfd);
+    build_headers(statusCode ,statusLine , &req);
 }
 
 
