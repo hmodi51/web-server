@@ -90,7 +90,6 @@ void checkFile(request* req){
         snprintf(req->path + strlen(req->path), bufSIZE - strlen(req->path) , "%s" , "/index.html");
         int length = strlen(req->path);
         printf("Length of string is : %d", length);
-        // strcat(path , "/index.html");
     }
 }
 
