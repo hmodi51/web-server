@@ -10,7 +10,6 @@
 
 #define PORT "8080"
 #define bufSIZE 4096
-#define PATH "index.html"
 #define http_version "HTTP/1.1"
 
 
