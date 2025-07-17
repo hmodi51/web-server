@@ -12,24 +12,31 @@
 #define bufSIZE 4096
 #define http_version "HTTP/1.1"
 
+typedef struct request_Line {
+    char method[8];
+    char path[bufSIZE];
+} request_Line;
+
 
 typedef struct request {
     int clientfd;
-    char method[8];
-    char path[bufSIZE];
+    request_Line line;
+    char requestLine[bufSIZE+bufSIZE];
+    char recbuf[bufSIZE*3];
     char headers[bufSIZE];
 } request;
 
 
 typedef enum HTTP_STATUS {
     HTTP_OK = 200,
-    HTTP_NOT_FOUND = 404
+    HTTP_NOT_FOUND = 404,
+    HTTP_NOT_IMPLEMENTED = 501 
 } HTTP_STATUS;
 
 
 void handle_method(char* requestLine , request* req){
-    snprintf(req->method , bufSIZE , "%s" , requestLine);
-    printf("hndle methid %s\n" , req->method);
+    snprintf(req->line.method , bufSIZE , "%s" , requestLine);
+    printf("hndle methid %s\n" , req->line.method);
 }
 
 void handle_404(request* req , char* statusLine){
@@ -53,8 +60,8 @@ void handle_200(request* req , char* statusLine){
     snprintf(req->headers, sizeof(req->headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
     snprintf(entity , sizeof(entity) , "%s%s" , statusLine , req->headers);
     send(req->clientfd , entity , strlen(entity) , 0);
-    if(strcmp(req->method , "GET")==0){
-        fptr = fopen(req->path , "r");
+    if(strcmp(req->line.method , "GET")==0){
+        fptr = fopen(req->line.path , "r");
         while(fgets(data , bufSIZE , fptr) != NULL){
             send(req->clientfd , data , strlen(data) , 0);
         }
@@ -66,11 +73,11 @@ int checkPath(char* filePath , request* req){
     char* res;
     if (strcmp(filePath , "/") == 0){
         char* relativePath = "index.html";
-        res = realpath(relativePath , req->path);
+        res = realpath(relativePath , req->line.path);
     }
     else{
-        res = realpath(filePath+1 , req->path);
-        printf("default path is %s\n" , req->path);
+        res = realpath(filePath+1 , req->line.path);
+        printf("default path is %s\n" , req->line.path);
     }
 
 
@@ -84,10 +91,10 @@ int checkPath(char* filePath , request* req){
 
 void checkFile(request* req){
     struct stat statbuf;
-    stat(req->path , &statbuf);
+    stat(req->line.path , &statbuf);
     if(S_ISDIR(statbuf.st_mode)){
-        snprintf(req->path + strlen(req->path), bufSIZE - strlen(req->path) , "%s" , "/index.html");
-        int length = strlen(req->path);
+        snprintf(req->line.path + strlen(req->line.path), bufSIZE - strlen(req->line.path) , "%s" , "/index.html");
+        int length = strlen(req->line.path);
         printf("Length of string is : %d", length);
     }
 }
@@ -121,14 +128,12 @@ void build_headers(HTTP_STATUS statusCode , char* statusLine , request* req){
 void handle_client(int connfd){
     request req;
     req.clientfd = connfd;
-    char path[bufSIZE];
-    char recbuf[bufSIZE];
     char statusLine[bufSIZE];
-    recv(req.clientfd , recbuf , bufSIZE , 0);
-    char* tokens = strtok(recbuf , "\r\n");
+    recv(req.clientfd , req.recbuf , bufSIZE , 0);
+    char* tokens = strtok(req.recbuf , "\r\n");
     char *requestLine = strtok(tokens , " ");
     handle_method(requestLine , &req);
-    printf("request line is %s\n" , req.method);
+    printf("request line is %s\n" , req.line.method);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
     int ret = checkPath(filePath , &req);
