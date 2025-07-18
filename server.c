@@ -30,8 +30,15 @@ typedef struct request {
 typedef enum HTTP_STATUS {
     HTTP_OK = 200,
     HTTP_NOT_FOUND = 404,
-    HTTP_NOT_IMPLEMENTED = 501 
+    HTTP_NOT_IMPLEMENTED = 501
 } HTTP_STATUS;
+
+
+typedef enum HTTP_METHODS {
+    GET,
+    HEAD
+} HTTP_METHODS;
+
 
 
 void handle_method(char* requestLine , request* req){
