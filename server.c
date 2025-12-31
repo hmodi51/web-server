@@ -48,18 +48,19 @@ typedef enum HTTP_METHODS {
     HEAD
 } HTTP_METHODS;
 
-void parseHeaders(char* rest){
+void parseHeaders(char* rest , headers* headerList){
     char* headersplit;
-    headers headerList[20];
     int i=0;
-    while(*rest){
+    char * headerString = strtok_r(rest , "\r\n" , &rest);
+    while(headerString){
         headers head;
-        char * headerString = strtok_r(rest , "\r\n" , &rest);
         char* keyptr = strtok_r(headerString , ": " , &headersplit);
         char* valueptr = headersplit;
         snprintf(head.key , sizeof(head.key) , "%s" , keyptr);
         snprintf(head.value , sizeof(head.value) , "%s" , valueptr);
         headerList[i++] = head;
+        headerString = strtok_r(rest , "\r\n" , &rest);
+        printf("\nheader key is %s and value is %s\n" , head.key ,head.value);
     }
 }
 
@@ -72,7 +73,7 @@ void handle_404(request* req , response* res){
     char data[bufSIZE];
     char entity[bufSIZE];
     FILE *fptr;
-    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\n\r\n");
     snprintf(entity , sizeof(entity) , "%s%s" , res->statusLine , res->headers);
     send(req->clientfd , entity , strlen(entity) , 0);
     printf("printing data sent\n %s\n data send end\n" , entity);
@@ -81,14 +82,14 @@ void handle_404(request* req , response* res){
         send(req->clientfd , data , strlen(data) , 0);
         printf("printing data sent\n %s\n data send end\n" , data);
     }
-    close(req->clientfd);
+    // close(req->clientfd);
 }
 
 void handle_200(request* req , response* res){
     char data[bufSIZE];
     char entity[bufSIZE];
     FILE *fptr;
-    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: close\r\n\r\n");
+    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: 101\r\n\r\n");
     snprintf(entity , sizeof(entity) , "%s%s" , res->statusLine , res->headers);
     send(req->clientfd , entity , strlen(entity) , 0);
     if(strcmp(req->line.method , "GET")==0){
@@ -97,7 +98,7 @@ void handle_200(request* req , response* res){
             send(req->clientfd , data , strlen(data) , 0);
         }
     }
-    close(req->clientfd);
+    // close(req->clientfd);
 }
 
 int checkPath(char* filePath , request* req){
@@ -155,39 +156,51 @@ void build_headers(HTTP_STATUS statusCode , request* req, response* res){
     }
 }
 
-
-void handle_client(int connfd){
-    request req;
+void handle_request(request* req){
     response res;
-    req.clientfd = connfd;
     char* requestLine;
     char* rest;
-    int sizeRecv = recv(req.clientfd , req.recbuf , 8192 , 0);
-    req.recbuf[sizeRecv] = '\0';
-    printf("recbuf printing\n %s \nrecbuf printend\n" , req.recbuf);
-    char* tokens = strtok_r(req.recbuf , "\r\n" , &rest);
+    char* tokens = strtok_r(req->recbuf , "\r\n" , &rest);
     char* host = strtok_r(NULL , "\r\n" , &rest);
-    parseHeaders(rest);
+    headers headerList[20];
+    parseHeaders(rest , headerList);
     printf("host is %s \n" , host);
     requestLine = tokens;
     printf("requestLine starting %s requestLine end\n" , requestLine);
     char *method = strtok(tokens , " ");
     printf("method starting %s method end\n" , method);
-    handle_method(method , &req);
+    handle_method(method , req);
     char *filePath = strtok(NULL , " ");
     printf("filpath is %s\n" , filePath);
-    int ret = checkPath(filePath , &req);
+    int ret = checkPath(filePath , req);
     HTTP_STATUS statusCode;
     if(ret == -1){
         statusCode = HTTP_NOT_FOUND;
     }
     else{
         statusCode = HTTP_OK;
-        checkFile(&req);
+        checkFile(req);
     }
     build_statusLine(statusCode , res.statusLine);
     printf("status code is %d\n" , statusCode);
-    build_headers(statusCode , &req , &res);
+    build_headers(statusCode , req , &res);
+}
+
+
+void handle_client(int connfd){
+    request req;
+    req.clientfd = connfd;
+    while(1){
+        printf("\nreceiving\n");
+        int sizeRecv = recv(req.clientfd , req.recbuf , 8192 , 0);
+        if(sizeRecv<=0 ){
+            close(req.clientfd);
+            break;
+        }
+        req.recbuf[sizeRecv] = '\0';
+        printf("recbuf printing\n %s \nrecbuf printend\n" , req.recbuf);
+        handle_request(&req);
+    }
 }
 
 
