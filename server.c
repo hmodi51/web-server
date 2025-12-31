@@ -17,7 +17,6 @@ typedef struct request_Line {
     char path[bufSIZE];
 } request_Line;
 
-
 typedef struct request {
     int clientfd;
     request_Line line;
@@ -32,10 +31,10 @@ typedef struct response {
     char data[bufSIZE];
 } response;
 
-// typedef struct headers {
-// 
-// }
-
+typedef struct headers {
+    char key[50];
+    char value[bufSIZE];
+} headers;
 
 typedef enum HTTP_STATUS {
     HTTP_OK = 200,
@@ -49,12 +48,23 @@ typedef enum HTTP_METHODS {
     HEAD
 } HTTP_METHODS;
 
-void parseRequest(){
-
+void parseHeaders(char* rest){
+    char* headersplit;
+    headers headerList[20];
+    int i=0;
+    while(*rest){
+        headers head;
+        char * headerString = strtok_r(rest , "\r\n" , &rest);
+        char* keyptr = strtok_r(headerString , ": " , &headersplit);
+        char* valueptr = headersplit;
+        snprintf(head.key , sizeof(head.key) , "%s" , keyptr);
+        snprintf(head.value , sizeof(head.value) , "%s" , valueptr);
+        headerList[i++] = head;
+    }
 }
 
 void handle_method(char* method , request* req){
-    snprintf(req->line.method , sizeof(method) , "%s" , method);
+    snprintf(req->line.method , 20 , "%s" , method);
     printf("hndle methid %s\n" , req->line.method);
 }
 
@@ -151,11 +161,13 @@ void handle_client(int connfd){
     response res;
     req.clientfd = connfd;
     char* requestLine;
-    int sizeRecv = recv(req.clientfd , req.recbuf , bufSIZE , 0);
+    char* rest;
+    int sizeRecv = recv(req.clientfd , req.recbuf , 8192 , 0);
     req.recbuf[sizeRecv] = '\0';
     printf("recbuf printing\n %s \nrecbuf printend\n" , req.recbuf);
-    char* tokens = strtok(req.recbuf , "\r\n");
-    char* host = strtok(NULL , "\r\n");
+    char* tokens = strtok_r(req.recbuf , "\r\n" , &rest);
+    char* host = strtok_r(NULL , "\r\n" , &rest);
+    parseHeaders(rest);
     printf("host is %s \n" , host);
     requestLine = tokens;
     printf("requestLine starting %s requestLine end\n" , requestLine);
