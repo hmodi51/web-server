@@ -42,7 +42,7 @@ typedef enum HTTP_METHODS {
 
 
 void handle_method(char* requestLine , request* req){
-    snprintf(req->line.method , sizeof(req->line.method) , "%s" , requestLine);
+    snprintf(req->line.method , bufSIZE , "%s" , requestLine);
     printf("hndle methid %s\n" , req->line.method);
 }
 
@@ -136,9 +136,7 @@ void handle_client(int connfd){
     request req;
     req.clientfd = connfd;
     char statusLine[bufSIZE];
-    int sizeRecv = recv(req.clientfd , req.recbuf , bufSIZE , 0);
-    req.recbuf[sizeRecv] = '\0';
-    printf("recbuf printing\n %s \nrecbuf printend\n" , req.recbuf);
+    recv(req.clientfd , req.recbuf , bufSIZE , 0);
     char* tokens = strtok(req.recbuf , "\r\n");
     printf("tokens starting %s/n tokens end\n" , tokens);
     char *requestLine = strtok(tokens , " ");
