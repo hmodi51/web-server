@@ -29,6 +29,7 @@ typedef struct response {
     char statusLine[bufSIZE];
     char headers[bufSIZE];
     char data[bufSIZE];
+    char length[10];
 } response;
 
 typedef struct headers {
@@ -73,7 +74,7 @@ void handle_404(request* req , response* res){
     char data[bufSIZE];
     char entity[bufSIZE];
     FILE *fptr;
-    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\n\r\n");
+    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: 513\r\n\r\n");
     snprintf(entity , sizeof(entity) , "%s%s" , res->statusLine , res->headers);
     send(req->clientfd , entity , strlen(entity) , 0);
     printf("printing data sent\n %s\n data send end\n" , entity);
@@ -89,7 +90,7 @@ void handle_200(request* req , response* res){
     char data[bufSIZE];
     char entity[bufSIZE];
     FILE *fptr;
-    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: 101\r\n\r\n");
+    snprintf(res->headers, sizeof(res->headers), "Content-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: %s\r\n\r\n" , res->length);
     snprintf(entity , sizeof(entity) , "%s%s" , res->statusLine , res->headers);
     send(req->clientfd , entity , strlen(entity) , 0);
     if(strcmp(req->line.method , "GET")==0){
@@ -121,14 +122,20 @@ int checkPath(char* filePath , request* req){
     }
 }
 
-void checkFile(request* req){
+void checkFile(request* req , response* res){
     struct stat statbuf;
+    int fileLength;
     stat(req->line.path , &statbuf);
     if(S_ISDIR(statbuf.st_mode)){
         snprintf(req->line.path + strlen(req->line.path), bufSIZE - strlen(req->line.path) , "%s" , "/index.html");
         int length = strlen(req->line.path);
         printf("Length of string is : %d", length);
     }
+    if(stat(req->line.path ,&statbuf)==0){
+        fileLength = statbuf.st_size;
+    }
+    snprintf(res->length , sizeof(res->length) ,"%d" ,fileLength);
+
 }
 
 void build_statusLine(HTTP_STATUS statusCode , char* statusLine){
@@ -179,7 +186,7 @@ void handle_request(request* req){
     }
     else{
         statusCode = HTTP_OK;
-        checkFile(req);
+        checkFile(req , &res);
     }
     build_statusLine(statusCode , res.statusLine);
     printf("status code is %d\n" , statusCode);
