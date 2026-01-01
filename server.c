@@ -110,7 +110,7 @@ int checkPath(char* filePath , request* req){
     }
     else{
         res = realpath(filePath+1 , req->line.path);
-        printf("default path is %s\n" , req->line.path);
+        // printf("default path is %s\n" , req->line.path);
     }
 
 
@@ -118,13 +118,14 @@ int checkPath(char* filePath , request* req){
         return -1;
     }
     else{
+        printf("default path is %s\n" , req->line.path);
         return 0;
     }
 }
 
 void checkFile(request* req , response* res){
     struct stat statbuf;
-    int fileLength;
+    long long fileLength = 0;
     stat(req->line.path , &statbuf);
     if(S_ISDIR(statbuf.st_mode)){
         snprintf(req->line.path + strlen(req->line.path), bufSIZE - strlen(req->line.path) , "%s" , "/index.html");
@@ -134,7 +135,7 @@ void checkFile(request* req , response* res){
     if(stat(req->line.path ,&statbuf)==0){
         fileLength = statbuf.st_size;
     }
-    snprintf(res->length , sizeof(res->length) ,"%d" ,fileLength);
+    snprintf(res->length , sizeof(res->length) ,"%ld" ,fileLength);
 
 }
 
@@ -197,10 +198,17 @@ void handle_request(request* req){
 void handle_client(int connfd){
     request req;
     req.clientfd = connfd;
+    int reqbufsize = sizeof(req.recbuf) -1;
+    // int sizeRecv = recv(req.clientfd , req.recbuf , sizeof(req.recbuf) - 1 , 0); // -1 to have space for null byte at end
     while(1){
         printf("\nreceiving\n");
-        int sizeRecv = recv(req.clientfd , req.recbuf , 8192 , 0);
+        int sizeRecv = recv(req.clientfd , req.recbuf , reqbufsize , 0);
+        while(strstr(req.recbuf ,"\r\n\r\n") == NULL){
+            int sizeReceived = recv(req.clientfd , req.recbuf + sizeRecv , reqbufsize - sizeRecv ,0);
+            sizeRecv+=sizeReceived; 
+        }
         if(sizeRecv<=0 ){
+            perror("recv failed");
             close(req.clientfd);
             break;
         }
